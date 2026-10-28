@@ -15,6 +15,8 @@ export const tokenAddress = parseAddress(env.VITE_TOKEN_ADDRESS);
 export const deployBlock = BigInt(env.VITE_DEPLOY_BLOCK || "0");
 export const rpcUrl: string | undefined =
   target === "local" ? "http://127.0.0.1:8545" : env.VITE_SEPOLIA_RPC_URL || undefined;
+/** Base URL of chain-indexer-rs. When unset, the app uses the RPC log scan only. */
+export const indexerUrl: string | undefined = env.VITE_INDEXER_URL || undefined;
 export const walletConnectProjectId: string | undefined = env.VITE_WALLETCONNECT_PROJECT_ID || undefined;
 
 export const explorerBase = targetChain.blockExplorers?.default.url;

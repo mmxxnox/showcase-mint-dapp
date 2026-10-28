@@ -20,8 +20,11 @@ Stack: Vite, React 19, wagmi 3, viem 2, TanStack Query. No UI framework; plain C
   See `src/lib/errors.ts`.
 - **Transaction states:** waiting for signature, pending, confirmed, failed or reverted on-chain, with an
   Etherscan link. Reads refresh when a transaction confirms.
-- **Your NFTs:** `Transfer` logs scanned in chunks from the deploy block, then `ownerOf` drops any token
-  you have since sent on.
+- **Your NFTs, two sources.** By default a direct RPC log scan: `Transfer` logs read in chunks from the deploy
+  block, then `ownerOf` drops any token you have since sent on. If `VITE_INDEXER_URL` is set, a switch appears and
+  the list can come from [`chain-indexer-rs`](https://github.com/mmxxnox/chain-indexer-rs) instead. Each load shows
+  how long it took and which source served it. The indexer response is validated, not trusted, and if the
+  indexer is down the panel says so and points to the RPC scan.
 
 ## Run it
 
@@ -60,6 +63,25 @@ approve and token mint, wrong payment, wallet limit, pause, ownership scan). It 
 E2E_LOCAL=1 E2E_NFT=<nft address> E2E_TOKEN=<token address> npm test
 ```
 
+## RPC scan vs indexer
+
+Measured on a local Hardhat node: 100,008 blocks, 3 mints, one wallet holding 2 tokens, 7 runs each
+(`E2E_BENCH=1`, `src/bench.local.test.ts`). Both sources returned **exactly the same tokens**.
+
+| Source | Median | Requests |
+|---|---|---|
+| RPC log scan | 3.9 ms | 6 (block number, 3 log ranges, 2 `ownerOf`) |
+| chain-indexer-rs | 0.5 ms | 1 |
+
+**Read this carefully:** a local node has no network latency, so the timing gap is small and understates a remote
+RPC. The number that matters is the request count. The scan needs one `eth_getLogs` per 40,000 blocks since deploy,
+so it grows with the chain's age and with the number of tokens, and each call is exposed to public-RPC rate
+limits. The indexer is one request however old the chain is. Sepolia numbers have not been measured yet; add them
+here after the deploy.
+
+To reproduce: run a Hardhat node, deploy, mint, `hardhat_mine` some blocks, sync the indexer, then
+`E2E_BENCH=1 E2E_NFT=<nft> E2E_USER=<wallet> E2E_INDEXER=http://127.0.0.1:3000 npm test`.
+
 ## Known limitations
 
 - **Not tested in a browser with a real wallet yet.** The contract calls, error decoding and log scan are covered by
@@ -67,6 +89,9 @@ E2E_LOCAL=1 E2E_NFT=<nft address> E2E_TOKEN=<token address> npm test
 - **Hidden metadata:** NFTs are listed by id only. Once the collection is revealed and pinned to IPFS, the next
   step is fetching `tokenURI` and showing the image.
 - **Log scan on public RPCs:** a long chain history on a rate-limited RPC can be slow. Setting
-  `VITE_DEPLOY_BLOCK` and your own `VITE_SEPOLIA_RPC_URL` fixes that; an indexer (The Graph) is the production answer.
+  `VITE_DEPLOY_BLOCK` and your own `VITE_SEPOLIA_RPC_URL` helps; the indexer source is the real fix.
+- **The indexer source is not browser-tested.** Its fetch and validation are unit-tested and it was timed from Node, but
+  the switch has not been clicked through in a browser.
+- **The indexer trails the chain** by its poll interval, so a fresh mint can appear a few seconds late. The panel re-checks every 4 s.
 - **No admin screen.** Pause, pricing and reveal are done from the contract directly.
 - **Single-chain.** One target network per build.

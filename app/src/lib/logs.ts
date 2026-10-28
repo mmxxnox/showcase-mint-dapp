@@ -26,3 +26,17 @@ export async function tokenIdsReceivedBy(
   }
   return [...ids].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
+
+/** Tokens `owner` holds right now, by log scan: find every transfer to them, then drop any since sent on. */
+export async function ownedTokenIdsByRpc(
+  client: PublicClient,
+  nft: Address,
+  owner: Address,
+  fromBlock: bigint,
+): Promise<bigint[]> {
+  const received = await tokenIdsReceivedBy(client, nft, owner, fromBlock);
+  const owners = await Promise.all(
+    received.map((id) => client.readContract({ address: nft, abi: showcaseNftAbi, functionName: "ownerOf", args: [id] })),
+  );
+  return received.filter((_, i) => owners[i].toLowerCase() === owner.toLowerCase());
+}
