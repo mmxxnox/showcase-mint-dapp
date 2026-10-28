@@ -9,6 +9,7 @@ export default buildModule("ShowcaseModule", (m) => {
     admin,
     m.getParameter("tokenCap", 10_000_000n * 10n ** 18n),
     m.getParameter("initialSupply", 1_000_000n * 10n ** 18n),
+    m.getParameter("adminDelay", 259_200n), // 3 days
   ]);
 
   const nft = m.contract("ShowcaseNFT", [
@@ -21,6 +22,7 @@ export default buildModule("ShowcaseModule", (m) => {
     m.getParameter("tokenPrice", 100n * 10n ** 18n),
     m.getParameter("royaltyBps", 500n),
     m.getParameter("hiddenURI", "ipfs://REPLACE_ME/hidden.json"),
+    m.getParameter("adminDelay", 259_200n),
   ]);
 
   return { token, nft };

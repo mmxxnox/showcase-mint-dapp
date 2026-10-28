@@ -9,7 +9,7 @@ const INITIAL = ethers.parseEther("1000000");
 describe("ShowcaseToken", function () {
   async function deploy() {
     const [admin, alice, bob] = await ethers.getSigners();
-    const token = await ethers.deployContract("ShowcaseToken", [admin.address, CAP, INITIAL]);
+    const token = await ethers.deployContract("ShowcaseToken", [admin.address, CAP, INITIAL, 3n * 24n * 60n * 60n]);
     return { token, admin, alice, bob };
   }
 

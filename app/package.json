@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "abi": "node scripts/generate-abi.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "headers": "node scripts/write-headers.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.0",

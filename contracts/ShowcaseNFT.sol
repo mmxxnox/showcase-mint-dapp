@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC2981} from "@openzeppelin/contracts/token/common/ERC2981.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControlDefaultAdminRules} from "@openzeppelin/contracts/access/extensions/AccessControlDefaultAdminRules.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -13,7 +13,7 @@ import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC2
 /// @notice ERC-721 collection with a capped supply, per-wallet limit, two payment routes
 ///         (ETH, or by burning the utility token), EIP-2981 royalties and a reveal switch.
 /// @dev Demonstration contract for a portfolio sample. Not audited; do not use with real funds.
-contract ShowcaseNFT is ERC721, ERC2981, AccessControl, Pausable, ReentrancyGuard {
+contract ShowcaseNFT is ERC721, ERC2981, AccessControlDefaultAdminRules, Pausable, ReentrancyGuard {
     using Strings for uint256;
 
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
@@ -48,6 +48,8 @@ contract ShowcaseNFT is ERC721, ERC2981, AccessControl, Pausable, ReentrancyGuar
     error NothingToWithdraw();
     error AlreadyRevealed();
     error RoyaltyTooHigh();
+    error CostExceedsMax(uint256 cost, uint256 max);
+    error EmptyBaseURI();
 
     uint96 private constant MAX_ROYALTY_BPS = 1_000; // 10%
 
@@ -60,14 +62,15 @@ contract ShowcaseNFT is ERC721, ERC2981, AccessControl, Pausable, ReentrancyGuar
         uint256 ethPrice_,
         uint256 tokenPrice_,
         uint96 royaltyBps,
-        string memory hiddenURI_
-    ) ERC721("Showcase NFT", "SHOWNFT") {
+        string memory hiddenURI_,
+        uint48 adminDelay_
+    ) ERC721("Showcase NFT", "SHOWNFT") AccessControlDefaultAdminRules(adminDelay_, admin) {
         if (admin == address(0) || treasury_ == address(0) || address(paymentToken_) == address(0)) {
             revert ZeroAddress();
         }
         if (royaltyBps > MAX_ROYALTY_BPS) revert RoyaltyTooHigh();
 
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
+        // DEFAULT_ADMIN_ROLE is granted by AccessControlDefaultAdminRules: transfers are two-step and delayed.
         _grantRole(MANAGER_ROLE, admin);
 
         treasury = treasury_;
@@ -90,11 +93,14 @@ contract ShowcaseNFT is ERC721, ERC2981, AccessControl, Pausable, ReentrancyGuar
         _mintBatch(msg.sender, quantity, false);
     }
 
-    /// @notice Mint `quantity` tokens by burning utility tokens. Requires prior approval
-    ///         (or a permit) for `tokenPrice * quantity`.
-    function mintWithToken(uint256 quantity) external nonReentrant whenNotPaused {
+    /// @notice Mint `quantity` tokens by burning utility tokens. Requires prior approval for the cost.
+    /// @param maxTotalCost The most the caller is willing to burn. Protects against a price change landing
+    ///        between the quote and the transaction, which matters most to holders with a large allowance.
+    function mintWithToken(uint256 quantity, uint256 maxTotalCost) external nonReentrant whenNotPaused {
+        uint256 cost = tokenPrice * quantity;
+        if (cost > maxTotalCost) revert CostExceedsMax(cost, maxTotalCost);
         // Non-payable, so attached ETH reverts. Burn first: if the allowance or balance is short the whole call reverts.
-        paymentToken.burnFrom(msg.sender, tokenPrice * quantity);
+        paymentToken.burnFrom(msg.sender, cost);
         _mintBatch(msg.sender, quantity, true);
     }
 
@@ -144,6 +150,8 @@ contract ShowcaseNFT is ERC721, ERC2981, AccessControl, Pausable, ReentrancyGuar
     /// @notice One-way reveal: after this the base URI is used for every token.
     function reveal(string calldata baseURI_) external onlyRole(MANAGER_ROLE) {
         if (revealed) revert AlreadyRevealed();
+        // Irreversible, so refuse the one input that is certainly a mistake.
+        if (bytes(baseURI_).length == 0) revert EmptyBaseURI();
         revealed = true;
         _baseTokenURI = baseURI_;
         emit Revealed(baseURI_);
@@ -169,7 +177,7 @@ contract ShowcaseNFT is ERC721, ERC2981, AccessControl, Pausable, ReentrancyGuar
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, ERC2981, AccessControl)
+        override(ERC721, ERC2981, AccessControlDefaultAdminRules)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

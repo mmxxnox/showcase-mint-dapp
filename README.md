@@ -5,7 +5,7 @@ build the wallet-connected frontend on top of them.
 It is **original work written for this portfolio**. It is not client code and does not reproduce any
 confidential project.
 
-> **Status:** contracts tested locally (25 passing tests). **Not audited. Not deployed to any network yet.** Sepolia deployment and
+> **Status:** contracts tested locally (38 passing tests). **Not audited. Not deployed to any network yet.** Sepolia deployment and
 > Etherscan verification are documented below; add the verified contract links here once you have run them.
 > A React mint frontend for these contracts is in [`app/`](app/README.md).
 
@@ -35,6 +35,12 @@ Stack: Solidity 0.8.34, OpenZeppelin Contracts 5.x, Hardhat 3, ethers v6, Mocha/
 - **Bounded royalties.** Royalty changes are capped at 10% so a compromised manager key cannot set them to 100%.
 - **Reveal is one-way.** After `reveal`, the base URI cannot be swapped silently.
 
+## Security
+
+A self-directed red-team pass found and fixed three contract issues (price change between quote and mint, single-step admin
+handover, irreversible empty reveal) and two frontend issues, each with a regression test. See [SECURITY.md](SECURITY.md).
+This is not an independent audit.
+
 ## Testing
 
 ```bash
@@ -60,7 +66,7 @@ npm run deploy:local        # dry run on the simulated network
 npm run deploy:sepolia      # real testnet deployment
 ```
 
-Override parameters (prices, supply, treasury, hidden URI) with a JSON file:
+Override parameters (prices, supply, treasury, hidden URI, `adminDelay` in seconds) with a JSON file:
 
 ```bash
 npx hardhat ignition deploy ignition/modules/Showcase.ts --network sepolia --parameters params.json

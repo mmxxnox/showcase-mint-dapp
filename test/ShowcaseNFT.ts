@@ -9,6 +9,7 @@ const ETH_PRICE = ethers.parseEther("0.05");
 const TOKEN_PRICE = ethers.parseEther("100");
 const ROYALTY_BPS = 500n; // 5%
 const HIDDEN_URI = "ipfs://hidden/metadata.json";
+const ADMIN_DELAY = 3n * 24n * 60n * 60n; // 3 days
 
 describe("ShowcaseNFT", function () {
   async function deploy() {
@@ -17,6 +18,7 @@ describe("ShowcaseNFT", function () {
       admin.address,
       ethers.parseEther("10000000"),
       ethers.parseEther("1000000"),
+      ADMIN_DELAY,
     ]);
     const nft = await ethers.deployContract("ShowcaseNFT", [
       admin.address,
@@ -28,6 +30,7 @@ describe("ShowcaseNFT", function () {
       TOKEN_PRICE,
       ROYALTY_BPS,
       HIDDEN_URI,
+      ADMIN_DELAY,
     ]);
     return { nft, token, admin, treasury, alice, bob, stranger };
   }
@@ -46,6 +49,7 @@ describe("ShowcaseNFT", function () {
           TOKEN_PRICE,
           ROYALTY_BPS,
           HIDDEN_URI,
+          ADMIN_DELAY,
         ];
         for (const [i, v] of Object.entries(over)) base[Number(i)] = v;
         return base;
@@ -120,7 +124,7 @@ describe("ShowcaseNFT", function () {
       await token.connect(alice).approve(await nft.getAddress(), TOKEN_PRICE * 2n);
       const supplyBefore = await token.totalSupply();
 
-      await expect(nft.connect(alice).mintWithToken(2n))
+      await expect(nft.connect(alice).mintWithToken(2n, TOKEN_PRICE * 2n))
         .to.emit(nft, "Minted")
         .withArgs(alice.address, 1n, 2n, true);
 
@@ -132,7 +136,7 @@ describe("ShowcaseNFT", function () {
     it("reverts without allowance and leaves no state behind", async function () {
       const { nft, token, admin, alice } = await deploy();
       await token.connect(admin).transfer(alice.address, TOKEN_PRICE);
-      await expect(nft.connect(alice).mintWithToken(1n)).to.be.revertedWithCustomError(
+      await expect(nft.connect(alice).mintWithToken(1n, TOKEN_PRICE)).to.be.revertedWithCustomError(
         token,
         "ERC20InsufficientAllowance",
       );
@@ -144,7 +148,7 @@ describe("ShowcaseNFT", function () {
       await token.connect(admin).transfer(alice.address, TOKEN_PRICE);
       await token.connect(alice).approve(await nft.getAddress(), TOKEN_PRICE);
       // Send raw calldata so ethers' client-side non-payable check cannot mask the on-chain result.
-      const data = nft.interface.encodeFunctionData("mintWithToken", [1n]);
+      const data = nft.interface.encodeFunctionData("mintWithToken", [1n, TOKEN_PRICE]);
       await expect(
         alice.sendTransaction({ to: await nft.getAddress(), data, value: 1n, gasLimit: 500_000n }),
       ).to.be.revert(ethers);

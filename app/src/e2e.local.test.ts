@@ -41,11 +41,11 @@ describe.skipIf(!enabled)("mint flows against a local node", () => {
     await settle(await wallet(user).writeContract(ethSim.request));
 
     // Token mint without approval is explained; then approve + mint 1.
-    const noAllowance = await publicClient.simulateContract({ account: user, address: nft, abi: mintWithTokenAbi, functionName: "mintWithToken", args: [1n] }).catch((e) => e);
+    const noAllowance = await publicClient.simulateContract({ account: user, address: nft, abi: mintWithTokenAbi, functionName: "mintWithToken", args: [1n, tokenPrice] }).catch((e) => e);
     expect(friendlyError(noAllowance)).toMatch(/Approve the SHOW tokens first/);
     const approve = await publicClient.simulateContract({ account: user, address: token, abi: showcaseTokenAbi, functionName: "approve", args: [nft, tokenPrice] });
     await settle(await wallet(user).writeContract(approve.request));
-    const tokenSim = await publicClient.simulateContract({ account: user, address: nft, abi: showcaseNftAbi, functionName: "mintWithToken", args: [1n] });
+    const tokenSim = await publicClient.simulateContract({ account: user, address: nft, abi: showcaseNftAbi, functionName: "mintWithToken", args: [1n, tokenPrice] });
     await settle(await wallet(user).writeContract(tokenSim.request));
 
     // Per-wallet limit (5): 3 minted, 3 more must be refused with a readable message.

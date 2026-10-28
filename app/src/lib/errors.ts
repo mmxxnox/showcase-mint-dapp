@@ -1,4 +1,4 @@
-import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError, formatEther } from "viem";
+import { BaseError, ContractFunctionRevertedError, UserRejectedRequestError, formatEther, formatUnits } from "viem";
 
 /** Plain-English text for each custom error the ShowcaseNFT / ERC-20 contracts can raise. */
 export function explainRevert(errorName: string | undefined, args: readonly unknown[] = []): string {
@@ -6,6 +6,10 @@ export function explainRevert(errorName: string | undefined, args: readonly unkn
     case "IncorrectPayment": {
       const [expected, sent] = args as [bigint, bigint];
       return `Wrong ETH amount: the mint costs ${formatEther(expected)} ETH, but ${formatEther(sent)} ETH was sent.`;
+    }
+    case "CostExceedsMax": {
+      const [cost, max] = args as [bigint, bigint];
+      return `The price changed to ${formatUnits(cost, 18)} SHOW, above the ${formatUnits(max, 18)} SHOW you agreed to. Nothing was burned. Refresh and try again.`;
     }
     case "WalletLimitExceeded":
       return "This would take you over the per-wallet limit.";

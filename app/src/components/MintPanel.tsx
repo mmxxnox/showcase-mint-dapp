@@ -7,6 +7,7 @@ import { showcaseTokenAbi } from "../abi/showcaseTokenAbi";
 import { targetChain } from "../config";
 import { friendlyError } from "../lib/errors";
 import { formatAmount } from "../lib/format";
+import { clampQuantity } from "../lib/quantity";
 import { useTx } from "../useTx";
 import type { useCollection } from "../useCollection";
 import { TxStatus } from "./TxStatus";
@@ -17,14 +18,14 @@ type Mode = "eth" | "token";
 export function MintPanel({ nft, token, c }: { nft: Address; token: Address; c: Collection }) {
   const { address, isConnected, chainId } = useConnection();
   const [mode, setMode] = useState<Mode>("eth");
-  const [requested, setRequested] = useState(1);
+  const [requested, setRequested] = useState<string>("1");
   const tx = useTx();
 
   const onRightNetwork = isConnected && chainId === targetChain.id;
   const remainingSupply = Number((c.maxSupply ?? 0n) - (c.totalSupply ?? 0n));
   const remainingForWallet = Number((c.maxPerWallet ?? 0n) - (c.mintedByMe ?? 0n));
   const maxQuantity = Math.max(0, Math.min(remainingSupply, remainingForWallet));
-  const quantity = Math.min(Math.max(requested, 1), Math.max(maxQuantity, 1));
+  const quantity = clampQuantity(requested, maxQuantity);
   const qty = BigInt(quantity);
 
   const ethCost = (c.ethPrice ?? 0n) * qty;
@@ -58,7 +59,7 @@ export function MintPanel({ nft, token, c }: { nft: Address; token: Address; c: 
     query: { enabled: canSimulate && mode === "token" && needsApproval },
   });
   const tokenSim = useSimulateContract({
-    address: nft, abi: mintWithTokenAbi, functionName: "mintWithToken", args: [qty], chainId: targetChain.id,
+    address: nft, abi: mintWithTokenAbi, functionName: "mintWithToken", args: [qty, tokenCost], chainId: targetChain.id,
     query: { enabled: canSimulate && mode === "token" && !needsApproval },
   });
 
@@ -93,7 +94,7 @@ export function MintPanel({ nft, token, c }: { nft: Address; token: Address; c: 
       <label className="qty">
         Quantity
         <input type="number" min={1} max={Math.max(maxQuantity, 1)} value={quantity} disabled={busy}
-          onChange={(e) => setRequested(Number(e.target.value) || 1)} />
+          onChange={(e) => setRequested(e.target.value)} />
         <span className="muted">up to {maxQuantity}</span>
       </label>
 

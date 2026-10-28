@@ -22,6 +22,15 @@ describe("explainRevert", () => {
   });
 });
 
+describe("explainRevert: price protection", () => {
+  it("tells the user nothing was burned when the price moved above their maximum", () => {
+    const text = explainRevert("CostExceedsMax", [parseEther("1000"), parseEther("100")]);
+    expect(text).toContain("1000 SHOW");
+    expect(text).toContain("100 SHOW");
+    expect(text).toMatch(/Nothing was burned/);
+  });
+});
+
 describe("friendlyError", () => {
   it("decodes a custom error from revert data", () => {
     expect(friendlyError(revertFor("WalletLimitExceeded"))).toMatch(/per-wallet limit/);

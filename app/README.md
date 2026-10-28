@@ -82,6 +82,16 @@ here after the deploy.
 To reproduce: run a Hardhat node, deploy, mint, `hardhat_mine` some blocks, sync the indexer, then
 `E2E_BENCH=1 E2E_NFT=<nft> E2E_USER=<wallet> E2E_INDEXER=http://127.0.0.1:3000 npm test`.
 
+## Hosting securely
+
+- **Headers.** `security-headers.mjs` is the single source for the CSP, framing and referrer headers. `npm run headers` writes
+  `public/_headers` (Netlify, Cloudflare Pages) and `vercel.json`; `vite preview` serves the same set. Edit the `.mjs`, then
+  re-run the script. The page needs a strict CSP because it asks users to sign transactions.
+- **Pin `connect-src`.** It currently allows any `https:`/`wss:` origin because RPC and indexer URLs vary. Once fixed, list only
+  those origins. If you enable WalletConnect, add the entries its modal needs.
+- **`VITE_*` values are public.** They are compiled into the bundle. Never put a secret there. For an RPC key, use one restricted
+  to your domain, or proxy RPC through your own backend.
+
 ## Known limitations
 
 - **Not tested in a browser with a real wallet yet.** The contract calls, error decoding and log scan are covered by

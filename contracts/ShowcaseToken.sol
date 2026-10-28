@@ -5,23 +5,24 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {ERC20Burnable} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import {ERC20Capped} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
-import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
+import {AccessControlDefaultAdminRules} from "@openzeppelin/contracts/access/extensions/AccessControlDefaultAdminRules.sol";
 
 /// @title ShowcaseToken
 /// @notice Capped, burnable ERC-20 utility token with EIP-2612 permit and role-based minting.
 /// @dev Demonstration contract for a portfolio sample. Not audited; do not use with real funds.
-contract ShowcaseToken is ERC20, ERC20Burnable, ERC20Capped, ERC20Permit, AccessControl {
+contract ShowcaseToken is ERC20, ERC20Burnable, ERC20Capped, ERC20Permit, AccessControlDefaultAdminRules {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
     /// @param admin Receives DEFAULT_ADMIN_ROLE and MINTER_ROLE.
     /// @param cap_ Hard supply cap in base units. Must be at least `initialSupply`.
     /// @param initialSupply Minted to `admin` at deployment.
-    constructor(address admin, uint256 cap_, uint256 initialSupply)
+    /// @param adminDelay_ Seconds an admin handover must wait between proposal and acceptance.
+    constructor(address admin, uint256 cap_, uint256 initialSupply, uint48 adminDelay_)
         ERC20("Showcase Token", "SHOW")
         ERC20Capped(cap_)
         ERC20Permit("Showcase Token")
+        AccessControlDefaultAdminRules(adminDelay_, admin)
     {
-        _grantRole(DEFAULT_ADMIN_ROLE, admin);
         _grantRole(MINTER_ROLE, admin);
         _mint(admin, initialSupply);
     }
