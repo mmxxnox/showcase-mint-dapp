@@ -14,6 +14,8 @@ confidential project.
 | `ShowcaseToken` (SHOW) | [`0x054b25B017f385488F5609Fbb8bC80750B7fD339`](https://sepolia.etherscan.io/address/0x054b25B017f385488F5609Fbb8bC80750B7fD339) | 12021690 |
 | `ShowcaseNFT` (SHOWNFT) | [`0xaBB918E5463C43e14066532746349ba5CeC3361F`](https://sepolia.etherscan.io/address/0xaBB918E5463C43e14066532746349ba5CeC3361F) | 12021695 |
 
+**Live demo (Sepolia testnet):** https://showcase-mint-dapp.vercel.app. It reads the contracts above. Minting needs a wallet on Sepolia with test ETH; the mint flows have been tested against a local chain but **not yet clicked through with a real wallet on the hosted site**.
+
 Read back from the chain after deployment: 1,000 max supply, 5 per wallet, 0.01 ETH or 100 SHOW per mint, 3-day admin
 handover delay, minting not paused. No NFTs minted yet. The deployer holds the initial 1,000,000 SHOW and both admin roles.
 
