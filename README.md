@@ -5,9 +5,17 @@ build the wallet-connected frontend on top of them.
 It is **original work written for this portfolio**. It is not client code and does not reproduce any
 confidential project.
 
-> **Status:** contracts tested locally (38 passing tests). **Not audited. Not deployed to any network yet.** Sepolia deployment and
-> Etherscan verification are documented below; add the verified contract links here once you have run them.
+> **Status:** contracts tested locally (38 passing tests) and **deployed to the Sepolia testnet on 29 Oct 2026**
+> (addresses below). **Not audited. Not deployed to mainnet. Etherscan source verification not yet confirmed.**
 > A React mint frontend for these contracts is in [`app/`](app/README.md).
+
+| Contract | Sepolia address | Deploy block |
+|---|---|---|
+| `ShowcaseToken` (SHOW) | [`0x054b25B017f385488F5609Fbb8bC80750B7fD339`](https://sepolia.etherscan.io/address/0x054b25B017f385488F5609Fbb8bC80750B7fD339) | 12021690 |
+| `ShowcaseNFT` (SHOWNFT) | [`0xaBB918E5463C43e14066532746349ba5CeC3361F`](https://sepolia.etherscan.io/address/0xaBB918E5463C43e14066532746349ba5CeC3361F) | 12021695 |
+
+Read back from the chain after deployment: 1,000 max supply, 5 per wallet, 0.01 ETH or 100 SHOW per mint, 3-day admin
+handover delay, minting not paused. No NFTs minted yet. The deployer holds the initial 1,000,000 SHOW and both admin roles.
 
 ## What is in it
 
