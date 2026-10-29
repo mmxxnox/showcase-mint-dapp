@@ -6,13 +6,13 @@ It is **original work written for this portfolio**. It is not client code and do
 confidential project.
 
 > **Status:** contracts tested locally (38 passing tests) and **deployed to the Sepolia testnet on 29 Oct 2026**
-> (addresses below). **Not audited. Not deployed to mainnet. Etherscan source verification not yet confirmed.**
+> (addresses below). **Not audited. Not deployed to mainnet.** Source code is verified on Sepolia Etherscan and Blockscout (links below).
 > A React mint frontend for these contracts is in [`app/`](app/README.md).
 
 | Contract | Sepolia address | Deploy block |
 |---|---|---|
-| `ShowcaseToken` (SHOW) | [`0x054b25B017f385488F5609Fbb8bC80750B7fD339`](https://sepolia.etherscan.io/address/0x054b25B017f385488F5609Fbb8bC80750B7fD339) | 12021690 |
-| `ShowcaseNFT` (SHOWNFT) | [`0xaBB918E5463C43e14066532746349ba5CeC3361F`](https://sepolia.etherscan.io/address/0xaBB918E5463C43e14066532746349ba5CeC3361F) | 12021695 |
+| `ShowcaseToken` (SHOW) | [`0x054b25B017f385488F5609Fbb8bC80750B7fD339`](https://sepolia.etherscan.io/address/0x054b25B017f385488F5609Fbb8bC80750B7fD339#code) ([Blockscout](https://eth-sepolia.blockscout.com/address/0x054b25B017f385488F5609Fbb8bC80750B7fD339#code)) | 12021690 |
+| `ShowcaseNFT` (SHOWNFT) | [`0xaBB918E5463C43e14066532746349ba5CeC3361F`](https://sepolia.etherscan.io/address/0xaBB918E5463C43e14066532746349ba5CeC3361F#code) ([Blockscout](https://eth-sepolia.blockscout.com/address/0xaBB918E5463C43e14066532746349ba5CeC3361F#code), [Sourcify](https://sourcify.dev/server/repo-ui/11155111/0xaBB918E5463C43e14066532746349ba5CeC3361F)) | 12021695 |
 
 **Live demo (Sepolia testnet):** https://showcase-mint-dapp.vercel.app. It reads the contracts above. Minting needs a wallet on Sepolia with test ETH. Verified on-chain on the deployed contracts (29 Oct 2026): ETH mints from two wallets up to the per-wallet limit, and an approve-then-burn-SHOW mint (the `mintWithToken` call with the `maxTotalCost` guard). The wrong-network, wallet-rejection and limit messages were checked by hand and are not recorded on-chain.
 
