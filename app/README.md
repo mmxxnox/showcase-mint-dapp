@@ -94,8 +94,9 @@ To reproduce: run a Hardhat node, deploy, mint, `hardhat_mine` some blocks, sync
 
 ## Known limitations
 
-- **Not tested in a browser with a real wallet yet.** The contract calls, error decoding and log scan are covered by
-  the local test; the React components are type-checked and build, but the click-through needs a wallet.
+- **Browser wallet tests were manual.** ETH and burn-SHOW minting, the limit, rejection and wrong-network messages were
+  tried by hand on the hosted site with two wallet apps; there is no automated browser wallet test yet. The contract calls,
+  error decoding and log scan are also covered by the local end-to-end test.
 - **Hidden metadata:** NFTs are listed by id only. Once the collection is revealed and pinned to IPFS, the next
   step is fetching `tokenURI` and showing the image.
 - **Log scan on public RPCs:** a long chain history on a rate-limited RPC can be slow. Setting

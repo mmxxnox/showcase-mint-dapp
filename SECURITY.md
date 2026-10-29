@@ -36,8 +36,10 @@ the ERC-721 receiver hook, permit replay, and exact-payment edges.
 
 - No static analysis (Slither, Mythril) and no fuzz or invariant suite. A Foundry invariant suite is the natural next step.
 - No independent audit.
-- The UI has not been exercised with a real wallet. The CSP was checked with a wallet-less headless browser, so
-  WalletConnect's modal (which needs extra `img-src`/`frame-src` entries) is untested.
+- Wallet flows were exercised by hand on the hosted site (29 Oct 2026) with two wallet apps: ETH mints, the per-wallet limit,
+  an approve-then-burn-SHOW mint (verified on-chain), and the wrong-network and wallet-rejection messages (the last two are
+  not recorded on-chain). That was manual, not automated. WalletConnect's modal, which needs extra `img-src`/`frame-src`
+  entries under the CSP, has not been tried.
 - `connect-src` allows any `https:`/`wss:` origin because RPC and indexer URLs vary per deployment. Pin them once fixed.
 
 ## Dependencies
